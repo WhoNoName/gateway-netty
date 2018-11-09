@@ -1,6 +1,7 @@
 package com.renguangli.gateway;
 
 import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
@@ -27,6 +28,7 @@ public class MybatisSqlSessionFactory {
             LOGGER.info("Mybatis init starting .");
             InputStream inputStream = Resources.getResourceAsStream("mybatis-config.xml");
             sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+            Configuration configuration = sqlSessionFactory.getConfiguration();
             LOGGER.info("Mybatis init start completed.");
         } catch (IOException e) {
             LOGGER.error("Mybatis init failed", e.getMessage());

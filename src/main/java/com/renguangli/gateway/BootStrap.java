@@ -9,8 +9,7 @@ package com.renguangli.gateway;
 public class BootStrap {
 
     public static void main(String[] args) throws InterruptedException {
-        int port = Configuration.intValue(ConfigConstants.GATEWAY_SERVER_PORT, 8088);
-        new Gateway().start(port);
+        new GatewayServer().start();
     }
 
 }

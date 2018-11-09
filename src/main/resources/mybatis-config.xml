@@ -33,9 +33,9 @@
 			<transactionManager type="JDBC" />
 			<dataSource type="com.renguangli.gateway.HikariDataSourceFactory">
 				<property name="driverClassName" value="com.mysql.jdbc.Driver" />
-				<property name="jdbcUrl" value="jdbc:mysql://172.16.3.21:31347/apimgtdb?useSSL=false" />
-				<property name="username" value="apim" />
-				<property name="password" value="apim" />
+				<property name="jdbcUrl" value="jdbc:mysql://localhost:3306/apimgt?useSSL=false" />
+				<property name="username" value="root" />
+				<property name="password" value="root" />
 				<property name="readOnly" value="false" />
 				<property name="connectionTimeout" value="30000" />
 				<property name="idleTimeout" value="600000" />
