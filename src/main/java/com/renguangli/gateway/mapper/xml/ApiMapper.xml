@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.renguangli.gateway.mapper.ApiMapper">
+   <resultMap id="apiResultMap" type="com.renguangli.gateway.pojo.Api">
+        <id property="apiId" column="api_id"/>
+        <result property="apiName" column="api_name" />
+        <result property="apiVersion" column="api_version" />
+        <result property="apiContext" column="api_context" />
+        <result property="description" column="description" />
+        <result property="context" column="context" />
+        <result property="endpoint" column="endpoint" />
+        <result property="uri" column="uri" />
+        <result property="method" column="method" />
+        <result property="protocol" column="protocol" />
+        <result property="contentType" column="content_type" />
+        <result property="params" column="params" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+        <result property="apiProvider" column="api_provider" />
+        <result property="apiConsumer" column="api_consumer" />
+    </resultMap>
+
+    <!-- 开启缓存 -->
+    <cache></cache>
+
+    <sql id="cols">
+        api_id,api_name,api_version,api_context,context,description,icon,endpoint,uri,method,protocol,content_type,params,create_time,update_time,api_consumer,api_provider
+    </sql>
+
+    <select id="getApiByContext" resultMap="apiResultMap">
+        select method,endpoint,uri from am_api where context = #{context}
+    </select>
+
+    <select id="listApis" resultMap="apiResultMap">
+        select <include refid="cols"/> from am_api
+    </select>
+</mapper>

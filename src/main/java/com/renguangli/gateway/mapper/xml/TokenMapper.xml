@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.gateway.mapper.TokenMapper">
+    <resultMap id="TokenResult" type="Token">
+        <result column="token_id" property="tokenId" />
+        <result column="token" property="token" />
+        <result column="authentication_id" property="authenticationId" />
+        <result column="username" property="username" />
+        <result column="client_id" property="clientId" />
+        <result column="authentication" property="authentication" />
+        <result column="refresh_token" property="refreshToken" />
+        <result column="valid" property="valid" />
+        <result column="expired_timestamp" property="expiredTimestamp" />
+        <result column="create_timestamp" property="createTimestamp" />
+    </resultMap>
+
+    <sql id="cols">
+        token,authentication_id,username,client_id,authentication,refresh_token,valid,expired_timestamp,create_timestamp
+    </sql>
+
+    <select id="getToken" resultMap="TokenResult">
+        select
+        token_id, <include refid="cols"/>
+        from oauth_access_token
+        where token = #{token}
+    </select>
+
+    <select id="getTokenByClientId" resultMap="TokenResult">
+        select
+          token_id, <include refid="cols"/>
+        from oauth_access_token
+        where valid = 0 and client_id = #{clienId}
+	</select>
+
+    <insert id="saveToken">
+        insert into oauth_access_token ( <include refid="cols"/> )
+        values
+          (
+            #{token},#{authenticationId},#{username},#{clientId},#{authentication},
+            #{refreshToken},#{valid},#{expiredTimestamp},#{createTimestamp}
+          )
+    </insert>
+
+    <update id="updateToken">
+        update oauth_access_token
+        set valid = 1
+        where client_id = #{clientId}
+    </update>
+
+</mapper>

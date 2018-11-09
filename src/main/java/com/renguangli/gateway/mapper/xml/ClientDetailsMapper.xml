@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.gateway.mapper.ClientDetailsMapper">
+
+    <resultMap id="ClientDetailsResult" type="ClientDetails">
+        <result column="client_id" property="clientId" />
+        <result column="client_secret" property="clientSecret" />
+        <result column="username" property="username" />
+        <result column="scope" property="scope" />
+        <result column="authorized_grant_types" property="authorizedGrantTypes" />
+        <result column="access_token_validity" property="accessTokenValidity" />
+    </resultMap>
+
+    <sql id="cols">
+        client_id,client_secret,username,scope,authorized_grant_types,access_token_validity
+    </sql>
+
+    <select id="getClientDetails" resultMap="ClientDetailsResult">
+        select <include refid="cols" />
+        from oauth_client_details
+        where client_id = #{clientId}
+	</select>
+
+</mapper>
