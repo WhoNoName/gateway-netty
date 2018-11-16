@@ -1,10 +1,10 @@
 package com.renguangli.gateway.service.impl;
 
 import com.renguangli.gateway.mapper.TokenMapper;
-import com.renguangli.gateway.MybatisSqlSessionFactory;
 import com.renguangli.gateway.pojo.Token;
 import com.renguangli.gateway.service.TokenService;
-import org.apache.ibatis.session.SqlSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * TokenServiceImpl
@@ -12,45 +12,34 @@ import org.apache.ibatis.session.SqlSession;
  * @author renguangli 2018/10/25 14:23
  * @since JDK 1.8
  */
+@Service("tokenService")
 public class TokenServiceImpl implements TokenService {
+
+    private final TokenMapper tokenMapper;
+
+    @Autowired
+    public TokenServiceImpl(TokenMapper tokenMapper) {
+        this.tokenMapper = tokenMapper;
+    }
 
     @Override
     public int saveToken(Token token) {
-        token.setAuthenticationId(0);
-        token.setValid(0);
-        SqlSession sqlSession = MybatisSqlSessionFactory.openSession();
-        TokenMapper tokenMapper = sqlSession.getMapper(TokenMapper.class);
-        int i = tokenMapper.saveToken(token);
-        sqlSession.commit();
-        sqlSession.close();
-        return i;
+        return tokenMapper.saveToken(token);
     }
 
     @Override
     public Token getToken(String accessToken) {
-        SqlSession sqlSession = MybatisSqlSessionFactory.openSession();
-        TokenMapper tokenMapper = sqlSession.getMapper(TokenMapper.class);
-        Token token = tokenMapper.getToken(accessToken);
-        sqlSession.close();
-        return token;
+        return tokenMapper.getToken(accessToken);
     }
 
     @Override
     public Token getTokenByClientId(String clientId) {
-        SqlSession sqlSession = MybatisSqlSessionFactory.openSession();
-        TokenMapper tokenMapper = sqlSession.getMapper(TokenMapper.class);
-        Token token = tokenMapper.getTokenByClientId(clientId);
-        sqlSession.close();
-        return token;
+        return tokenMapper.getTokenByClientId(clientId);
     }
 
     @Override
     public void updateToken(String clientId) {
-        SqlSession sqlSession = MybatisSqlSessionFactory.openSession();
-        TokenMapper tokenMapper = sqlSession.getMapper(TokenMapper.class);
         tokenMapper.updateToken(clientId);
-        sqlSession.commit();
-        sqlSession.close();
     }
 
 }

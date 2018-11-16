@@ -1,10 +1,10 @@
 package com.renguangli.gateway.service.impl;
 
 import com.renguangli.gateway.mapper.ClientDetailsMapper;
-import com.renguangli.gateway.MybatisSqlSessionFactory;
 import com.renguangli.gateway.pojo.ClientDetails;
 import com.renguangli.gateway.service.ClientDetailsService;
-import org.apache.ibatis.session.SqlSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * ClientDetailsServiceImpl
@@ -12,15 +12,19 @@ import org.apache.ibatis.session.SqlSession;
  * @author renguangli 2018/10/25 15:03
  * @since JDK 1.8
  */
+@Service("clientDetailsService")
 public class ClientDetailsServiceImpl implements ClientDetailsService {
+
+    private final ClientDetailsMapper clientDetailsMapper;
+
+    @Autowired
+    public ClientDetailsServiceImpl(ClientDetailsMapper clientDetailsMapper) {
+        this.clientDetailsMapper = clientDetailsMapper;
+    }
 
     @Override
     public ClientDetails getClientDetails(String clientId) {
-        SqlSession sqlSession = MybatisSqlSessionFactory.openSession();
-        ClientDetailsMapper clientDetailsMapper = sqlSession.getMapper(ClientDetailsMapper.class);
-        ClientDetails clientDetails = clientDetailsMapper.getClientDetails(clientId);
-        sqlSession.close();
-        return clientDetails;
+        return clientDetailsMapper.getClientDetails(clientId);
     }
 
     @Override

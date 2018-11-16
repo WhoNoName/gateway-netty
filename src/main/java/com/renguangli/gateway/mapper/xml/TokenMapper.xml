@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.github.gateway.mapper.TokenMapper">
-    <resultMap id="TokenResult" type="Token">
+    <resultMap id="TokenResult" type="com.renguangli.gateway.pojo.Token">
         <result column="token_id" property="tokenId" />
         <result column="token" property="token" />
         <result column="authentication_id" property="authenticationId" />

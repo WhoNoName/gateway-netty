@@ -1,7 +1,6 @@
 package com.renguangli.gateway.service;
 
 import com.renguangli.gateway.pojo.Token;
-import com.renguangli.gateway.service.impl.TokenServiceImpl;
 
 /**
  * TokenService
@@ -10,8 +9,6 @@ import com.renguangli.gateway.service.impl.TokenServiceImpl;
  * @since JDK 1.8
  */
 public interface TokenService {
-
-    TokenService tokenService = new TokenServiceImpl();
 
     int saveToken(Token tokenVO);
 

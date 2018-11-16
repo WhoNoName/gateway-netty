@@ -9,7 +9,7 @@ package com.renguangli.gateway;
 public class BootStrap {
 
     public static void main(String[] args) throws InterruptedException {
-        new GatewayServer().start();
+        new Gateway().start();
     }
 
 }

@@ -2,7 +2,6 @@ package com.renguangli.gateway.service;
 
 
 import com.renguangli.gateway.pojo.ClientDetails;
-import com.renguangli.gateway.service.impl.ClientDetailsServiceImpl;
 
 /**
  * ClientDetailsService
@@ -11,8 +10,6 @@ import com.renguangli.gateway.service.impl.ClientDetailsServiceImpl;
  * @since JDK 1.8
  */
 public interface ClientDetailsService {
-
-    ClientDetailsService clientDetailsService = new ClientDetailsServiceImpl();
 
     int saveClientDetails(ClientDetails clientDetails);
 

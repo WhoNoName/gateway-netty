@@ -1,14 +1,15 @@
 package com.renguangli.gateway.endpoint;
 
-import com.alibaba.fastjson.JSON;
-import com.renguangli.gateway.cache.CacheManager;
-import com.renguangli.gateway.filter.GatewayFilter;
+import com.renguangli.gateway.Filter;
+import com.renguangli.gateway.Gateway;
 import com.renguangli.gateway.pojo.Api;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.*;
+import com.renguangli.gateway.service.ApiService;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
 import org.apache.http.Header;
 import org.apache.http.client.config.RequestConfig;
@@ -24,27 +25,19 @@ import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * HttpServerHandler
+ * EndpointFilter
  *
- * @author renguangli 2018/11/7 11:52
+ * @author renguangli 2018/11/16 13:03
  * @since JDK 1.8
  */
-@ChannelHandler.Sharable
-public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class EndpointFilter implements Filter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerHandler.class);
-
-    private List<GatewayFilter> filters = new ArrayList<>();
-
+    private ApiService apiService = Gateway.applicationContext.getBean(ApiService.class);
 
     private static CloseableHttpClient httpClient;
 
@@ -74,83 +67,49 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
-        // 执行过滤器链
-        for (GatewayFilter filter : filters) {
-            filter.filter(request);
+    public int order() {
+        return 0;
+    }
+
+    @Override
+    public boolean filter(FullHttpRequest request, FullHttpResponse response) {
+        // 从数据库中获取 API 信息
+        Api api = apiService.getApiByContext(request.uri());
+        if (api == null) { // 资源不存在
+            ResponseUtils.buildNotFoundResponse(request, response);
+            return false;
         }
 
-        String uri = request.uri();
-        FullHttpResponse response = new DefaultFullHttpResponse(request.protocolVersion(), HttpResponseStatus.OK);
-        // 从缓存中获取 API 信息
-        CacheManager cacheManager = CacheManager.getCacheManager();
-        Object value = cacheManager.get(uri);
-
-        if (value == null) { // 资源不存在
-            // 构建 NOT_FOUND
-            response.setStatus(HttpResponseStatus.NOT_FOUND);
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
-            String message = "Resource " + uri + " is not exists.";
-            ErrorResult errorResult = new ErrorResult(HttpResponseStatus.NOT_FOUND.reasonPhrase(), message);
-            response.content().writeBytes(Unpooled.copiedBuffer(JSON.toJSONBytes(errorResult)));
-            ctx.writeAndFlush(response);
-            return;
-        }
-
-        Api api = (Api) value;
         String url = api.getEndpoint() + api.getUri();
-        HttpMethod method = request.method();
-        EndpointResponse endpointResponse = null;
-        if ("GET".equalsIgnoreCase(api.getMethod())) {
+        EndpointResponse endpointResponse;
+        if (HttpMethod.GET.name().equalsIgnoreCase(api.getMethod())) {
             endpointResponse = doGet(url);
-        } else if ("POST".equalsIgnoreCase(api.getMethod())) {
+        } else if (HttpMethod.GET.name().equalsIgnoreCase(api.getMethod())) {
             endpointResponse = doPost(request, url);
-        } else if ("PUT".equalsIgnoreCase(api.getMethod())) {
+        } else if (HttpMethod.POST.name().equalsIgnoreCase(api.getMethod())) {
             endpointResponse = doPost(request, url);
-        } else if ("DELETE".equalsIgnoreCase(api.getMethod())) {
+        } else if (HttpMethod.PUT.name().equalsIgnoreCase(api.getMethod())) {
             endpointResponse = doPost(request, url);
-        } else if ("HEAD".equalsIgnoreCase(api.getMethod())) {
+        } else if (HttpMethod.DELETE.name().equalsIgnoreCase(api.getMethod())) {
             endpointResponse = doPost(request, url);
-        } else if ("CONNECT".equalsIgnoreCase(api.getMethod())) {
+        } else if (HttpMethod.HEAD.name().equalsIgnoreCase(api.getMethod())) {
             endpointResponse = doPost(request, url);
-        } else if ("PATCH".equalsIgnoreCase(api.getMethod())) {
+        } else if (HttpMethod.OPTIONS.name().equalsIgnoreCase(api.getMethod())) {
             endpointResponse = doPost(request, url);
-        } else if ("OPTIONS".equalsIgnoreCase(api.getMethod())) {
+        } else if (HttpMethod.CONNECT.name().equalsIgnoreCase(api.getMethod())) {
             endpointResponse = doPost(request, url);
-        } else if ("TRACE".equalsIgnoreCase(api.getMethod())) {
+        } else if (HttpMethod.TRACE.name().equalsIgnoreCase(api.getMethod())) {
             endpointResponse = doPost(request, url);
         } else {
-            // 不支持的请求方法
-            response.setStatus(HttpResponseStatus.METHOD_NOT_ALLOWED);
-            String message = "Request method '" + method.name() + "' not supported";
-            ErrorResult errorResult = new ErrorResult(HttpResponseStatus.METHOD_NOT_ALLOWED.reasonPhrase(), message);
-            response.content().writeBytes(Unpooled.copiedBuffer(JSON.toJSONBytes(errorResult)));
-            response.headers().set(HttpHeaderNames.CONTENT_LENGTH,response.content().readableBytes());
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
-            ctx.writeAndFlush(response);
-            return;
+            ResponseUtils.buildMethodNotSupportResponse(request, response);
+            return false;
         }
-
-        // 调用成功
-        response.content().writeBytes(endpointResponse.getBody().getBytes(CharsetUtil.UTF_8));
-        response.headers().set(endpointResponse.getHeaders());
-        response.headers().set(HttpHeaderNames.CONTENT_LENGTH,response.content().readableBytes());
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, api.getContentType());
-        ctx.writeAndFlush(response);
+        ResponseUtils.buildSuccessResponse(endpointResponse, response);
+        return true;
     }
 
-    @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER);
-    }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
-        ctx.close();
-    }
-
-    private EndpointResponse doGet(String url) throws IOException {
+    private EndpointResponse doGet(String url) {
         HttpGet httpGet = new HttpGet(url);
         httpGet.setConfig(requestConfig);
         return execute(httpGet);

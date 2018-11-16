@@ -1,13 +1,11 @@
 package com.renguangli.gateway.oauth;
 
-import com.renguangli.gateway.filter.GatewayFilter;
+import com.renguangli.gateway.Filter;
 import io.netty.buffer.Unpooled;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +16,7 @@ import org.slf4j.LoggerFactory;
  * @author renguangli 2018/11/7 18:49
  * @since JDK 1.8
  */
-public class OauthGatewayFilter implements GatewayFilter {
+public class OauthGatewayFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OauthGatewayFilter.class);
 
@@ -30,13 +28,12 @@ public class OauthGatewayFilter implements GatewayFilter {
     }
 
     @Override
-    public boolean filter(FullHttpRequest request) {
+    public boolean filter(FullHttpRequest request, FullHttpResponse response) {
         BearerHeaderTokenDecoder bearerHeaderTokenDecoder = new BearerHeaderTokenDecoder();
         String accessToken = bearerHeaderTokenDecoder.getAccessToken(request);
         if (!ACCESS_TOKEN.equals(accessToken)) {
             LOGGER.debug("auth failed,invalid accessToken:{}", accessToken);
             //构建HttpResponse
-            FullHttpResponse response = new DefaultFullHttpResponse(request.protocolVersion(), HttpResponseStatus.UNAUTHORIZED);
             //添加响应正文
             //language=JSON
             String responseBody = "{\"error\":\"Invalid Request\"}";

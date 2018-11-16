@@ -1,27 +1,43 @@
 package com.renguangli.gateway;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
-public class Configurations {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Configurations.class);
+/**
+ * Configurations
+ *
+ * @author renguangli 2018/11/15 21:37
+ * @since JDK 1.8
+ */
+public class Configurations extends PropertyPlaceholderConfigurer {
 
-    private static PropertiesConfiguration configuration;
+    private static Map<String, String> properties = new HashMap<>();
 
-    static {
-        try {
-            LOGGER.info("Loading config {}", ConfigConstants.DEFAULT_CONFIG_NAME);
-            configuration = new PropertiesConfiguration(ConfigConstants.DEFAULT_CONFIG_NAME);
-        } catch (ConfigurationException e) {
-            e.printStackTrace();
+    @Override
+    protected void processProperties(ConfigurableListableBeanFactory beanFactoryToProcess, Properties props) throws BeansException {
+        super.processProperties(beanFactoryToProcess, props);
+        for (Object key : props.keySet()) {
+            String value = props.getProperty(key.toString());
+            properties.put(key.toString(), value);
         }
     }
 
-    public static PropertiesConfiguration getConfiguration() {
-        return configuration;
+    // static method for accessing context properties
+    public static int getIntProperty(String name, int defaultValue) {
+        String value = properties.get(name);
+        return value == null ? defaultValue : Integer.valueOf(value);
     }
 
+    public static void setProperties(String name, String value) {
+        properties.put(name, value);
+    }
+
+    public static void updateProperties(String name, String value) {
+        properties.put(name, value);
+    }
 }

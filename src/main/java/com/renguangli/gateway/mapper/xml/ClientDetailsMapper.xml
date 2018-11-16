@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.github.gateway.mapper.ClientDetailsMapper">
 
-    <resultMap id="ClientDetailsResult" type="ClientDetails">
+    <resultMap id="ClientDetailsResult" type="com.renguangli.gateway.pojo.ClientDetails">
         <result column="client_id" property="clientId" />
         <result column="client_secret" property="clientSecret" />
         <result column="username" property="username" />
